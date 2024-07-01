@@ -163,5 +163,16 @@ cython_debug/
 
 # video files
 *.mp4
+# image files
+*.jpg
 # zip files
 *.zip
+# zarr files
+*.zarr
+# log files
+*.log
+# csv files
+# *.csv
+# folders to ignore 
+Data/
+data/
