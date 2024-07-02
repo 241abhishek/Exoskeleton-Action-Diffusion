@@ -96,6 +96,64 @@ def find_sync_point(file_1, file_2, sync_column):
     print(f"Sync value {sync_value} not found in {file_1}")
     return -1
 
+def remove_data_using_sync_point(file_1, file_2, sync_column):
+    """
+    Remove data from the beginning of the first CSV file up to the sync point.
+
+    Args:
+        file_1 (csv): First CSV file
+        file_2 (csv): Second CSV file
+        sync_column (string): Column to use for synchronization
+    """
+    # Find the sync point
+    sync_point = find_sync_point(file_1, file_2, sync_column)
+
+    # Return if the sync point is not found
+    if sync_point == -1:
+        return
+    print(f"Sync point found at index {sync_point}")
+
+    # get file_1 length
+    total_rows_1 = get_file_length(file_1)
+
+    # get the header from file_1
+    header_1 = pd.read_csv(file_1, nrows=0).columns
+
+    # create a copy of file_1
+    file_1_mod = file_1.replace('.csv', '-sync.csv')
+
+    # Read the file in chunks and remove the data up to the sync point
+    # Ignore the header row
+    with tqdm(total=total_rows_1, desc="Removing data and creating synced copy of file_1") as pbar:
+        pbar.update(sync_point)
+        # Write the header
+        with open(file_1_mod, 'w', newline='') as outfile:
+            writer = csv.writer(outfile)
+            writer.writerow(header_1)
+        for chunk in pd.read_csv(file_1, chunksize=10000, skiprows=range(1, sync_point + 1)):
+            chunk.to_csv(file_1_mod, mode='a', header=False, index=False)
+            pbar.update(len(chunk))
+
+    # get file_2 length
+    total_rows_2 = get_file_length(file_2)
+
+    # get the header from file_2
+    header_2 = pd.read_csv(file_2, nrows=0).columns
+
+    # create a copy of file_2
+    file_2_mod = file_2.replace('.csv', '-sync.csv')
+    with tqdm (total=total_rows_2, desc="Creating synced copy of file_2") as pbar:
+        with open(file_2_mod, 'w', newline='') as outfile:
+            writer = csv.writer(outfile)
+            writer.writerow(header_2)
+        for chunk in pd.read_csv(file_2, chunksize=10000):
+            chunk.to_csv(file_2_mod, mode='a', header=False, index=False)
+            pbar.update(len(chunk))
+
+    # check if the files are of same length
+    if get_file_length(file_1_mod) == get_file_length(file_2_mod):
+        print("Synced files created successfully")
+
 if __name__ == "__main__":
     # Example usage
     input_file = "/home/abhi2001/SRA/Data/Data/logCoppy/Subj1_May72024/X2_SRA_B_07-05-2024_10-41-46.csv"
@@ -105,7 +163,9 @@ if __name__ == "__main__":
     # extract_columns(input_file, output_file, columns_to_extract)
     # print(len(list_columns(input_file)))
     # show_preview(input_file)
+
     file_1 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_A_07-05-2024_10-39-10-mod.csv"
     file_2 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_B_07-05-2024_10-41-46-mod.csv"
     sync_column = ' TimeInteractionSubscription'
-    print(find_sync_point(file_1, file_2, sync_column))
+    # print(find_sync_point(file_1, file_2, sync_column))
+    remove_data_using_sync_point(file_1, file_2, sync_column)
