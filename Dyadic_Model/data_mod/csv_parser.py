@@ -96,7 +96,7 @@ def find_sync_point(file_1, file_2, sync_column):
     print(f"Sync value {sync_value} not found in {file_1}")
     return -1
 
-def remove_data_using_sync_point(file_1, file_2, sync_column):
+def create_synced_data(file_1, file_2, sync_column):
     """
     Remove data from the beginning of the first CSV file up to the sync point.
 
@@ -168,4 +168,4 @@ if __name__ == "__main__":
     file_2 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_B_07-05-2024_10-41-46-mod.csv"
     sync_column = ' TimeInteractionSubscription'
     # print(find_sync_point(file_1, file_2, sync_column))
-    remove_data_using_sync_point(file_1, file_2, sync_column)
+    create_synced_data(file_1, file_2, sync_column)
