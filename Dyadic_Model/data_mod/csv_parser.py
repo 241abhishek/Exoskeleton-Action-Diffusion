@@ -5,6 +5,7 @@ Utility functions for parsing csv files.
 import csv
 import pandas as pd 
 from tqdm import tqdm
+import math
 
 def extract_columns(input_file, output_file, columns_to_extract, chunksize=10000):
     """
@@ -154,18 +155,56 @@ def create_synced_data(file_1, file_2, sync_column):
     if get_file_length(file_1_mod) == get_file_length(file_2_mod):
         print("Synced files created successfully")
 
-if __name__ == "__main__":
-    # Example usage
-    input_file = "/home/abhi2001/SRA/Data/Data/logCoppy/Subj1_May72024/X2_SRA_B_07-05-2024_10-41-46.csv"
-    output_file = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_B_07-05-2024_10-41-46-mod.csv"
-    columns_to_extract = [' TimeInteractionSubscription', ' JointPositions_1', ' JointPositions_2', ' JointPositions_3', ' JointPositions_4']
-    # print(get_file_length(input_file))
-    # extract_columns(input_file, output_file, columns_to_extract)
-    # print(len(list_columns(input_file)))
-    # show_preview(input_file)
+def calc_average_frequency(input_file, time_column_name):
+    """
+    Calculate the average frequency of the data in a CSV file.
 
-    file_1 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_A_07-05-2024_10-39-10-mod.csv"
-    file_2 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_B_07-05-2024_10-41-46-mod.csv"
-    sync_column = ' TimeInteractionSubscription'
-    # print(find_sync_point(file_1, file_2, sync_column))
-    create_synced_data(file_1, file_2, sync_column)
+    Args:
+        input_file (csv): Input CSV file
+        time_column_name (string): Name of the time column
+
+    Returns:
+        float: Average frequency of the data
+    """
+
+    # Read the time column from the CSV file
+    time_column = pd.read_csv(input_file, usecols=[time_column_name])[time_column_name]
+
+    # Find the number of rows between every successive pair of 1 second timestamps
+    nrows = list()
+    start_val = time_column[24]
+    num_rows = 0
+    
+    for i in range(25, len(time_column)):
+        if time_column[i] - start_val < 1:
+            num_rows += 1
+        else:
+            nrows.append(num_rows)
+            start_val = time_column[i]
+            num_rows = 0
+
+    # Calculate the average frequency
+    average_frequency = sum(nrows) / len(nrows)
+
+    return average_frequency
+
+
+if __name__ == "__main__":
+    # # Example usage
+    # input_file = "/home/abhi2001/SRA/Data/Data/logCoppy/Subj1_May72024/X2_SRA_B_07-05-2024_10-41-46.csv"
+    # output_file = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_B_07-05-2024_10-41-46-mod.csv"
+    # columns_to_extract = [' TimeInteractionSubscription', ' JointPositions_1', ' JointPositions_2', ' JointPositions_3', ' JointPositions_4']
+    # # print(get_file_length(input_file))
+    # # extract_columns(input_file, output_file, columns_to_extract)
+    # # print(len(list_columns(input_file)))
+    # # show_preview(input_file)
+
+    # file_1 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_A_07-05-2024_10-39-10-mod.csv"
+    # file_2 = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_B_07-05-2024_10-41-46-mod.csv"
+    # sync_column = ' TimeInteractionSubscription'
+    # # print(find_sync_point(file_1, file_2, sync_column))
+    # create_synced_data(file_1, file_2, sync_column)
+
+    input_file = "/home/abhi2001/SRA/Dyadic_Model/data/X2_SRA_A_07-05-2024_10-39-10-mod-sync.csv"
+    time_column_name = ' TimeInteractionSubscription'
+    print(calc_average_frequency(input_file, time_column_name))
