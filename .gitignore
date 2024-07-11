@@ -176,6 +176,7 @@ cython_debug/
 # folders to ignore 
 Data/
 data/
+runs/
 
 # files to ignore
 diffusion_policy_vision_pusht_demo.ipynb
