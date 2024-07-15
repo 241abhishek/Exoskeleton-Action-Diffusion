@@ -177,7 +177,9 @@ cython_debug/
 Data/
 data/
 runs/
+images/
 
 # files to ignore
 diffusion_policy_vision_pusht_demo.ipynb
 Dyadic_Model/ema_noise_pred_net.pth
+training_stats.txt
